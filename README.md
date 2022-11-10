@@ -1,3 +1,8 @@
 # finalProjectFall2022
-# Ya boi
-hello
+My platform video game
+
+# Description
+This videogame is a game bro idk
+
+# Getting Started
+Dependenies
