@@ -84,7 +84,7 @@ class Player(Sprite):
         global HINT
         keys = pg.key.get_pressed()
         if keys[pg.K_r]:
-            self.pos = vec(WIDTH /2, HEIGHT / 2) # resets position
+            self.pos = vec(WIDTH / 2, HEIGHT / 2) # resets position
         if keys[pg.K_LEFT]:
             self.acc.x = -2.5
             # print(self.vel)
@@ -93,6 +93,13 @@ class Player(Sprite):
         keys = pg.key.get_pressed()
         if keys[pg.K_SPACE]: # floats while space is held in the direction the player was moving, still has friction
             self.acc.y = -1.5
+            if hits:
+                    player.rect.top = hits[0].rect.bottom
+                    # self.acc.y = 0
+                    self.vel.y = 100
+           
+            # if self.vel.y >= 10:
+            #     self.acc.y = 1
             HINT += 1    
     def jump(self):
         self.rect.x += 1
@@ -119,13 +126,31 @@ class Player(Sprite):
 
 class Sweep(Sprite):
     def __init__(sweep, x, y, w, h):
-        # defines player sprite parameters
+        # defines sweep sprite parameters
         Sprite.__init__(sweep)
         player.rect.x = x
         player.rect.y = y
-        sweep.rect = sweep.image.get_rect()
+        sweep.w = w
+        sweep.h = h
         sweep.image = pg.Surface((300, 300))
         sweep.image.fill(TEAL)
+        sweep.rect = sweep.image.get_rect()
+        sweep.rect.center = (WIDTH / 2, HEIGHT / 2)
+        sweep.pos = vec(WIDTH / 2, HEIGHT / 2)
+        sweep.vel = vec(0,0)
+        sweep.acc = vec(0,0)
+        
+def blast(sweep):
+    keys = pg.key.get_pressed()
+    if keys[pg.K_KP_ENTER]:
+        sweep.pos = vec(player.x, player.y)
+        color = TEAL
+        s = Sweep(x, y, color, 150, 150)
+        all_sprites.add(s)
+        sweep.add(s)
+        print("sweep")
+def update(sweep):
+    sweep.blast()
 
 
 
@@ -143,15 +168,18 @@ class Platform(Sprite):
 
 '''
 class Elevator(Platform(Sprite)):
-    def __init__(self, x, y, w, h, vel):
+    def __init__(self, lift):
         Platform.__init__(self)
         Sprite.__init__(self)
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
-        self.vel = vel
- '''       
+        self.lift = lift
+        lift = self.vel.y
+        self.image.fill(GREEN)
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH/2, HEIGHT/2)
+        self.pos = vec(WIDTH/2, HEIGHT/2)
+        self.vel = vec(0,0)
+        self.acc = vec(0,0)
+'''
 # scrapped elevator idea        
 
 class Enemy(Sprite):
@@ -192,7 +220,8 @@ plat2 = Platform(0 - WIDTH / 2, HEIGHT/1.05, WIDTH * 2, 35) # Bottom
 plat3 = Platform(50, 200, 200, 10)
 plat4 = Platform(800, 375, 200, 10)
 plat5 = Platform(0 - WIDTH / 2, 0, WIDTH * 2, 10) # Top 
-
+# elevator = Elevator(0, 0, 50, 100, 10)
+# sweep
 colors = [WHITE, RED, GREEN, BLUE]
 
 
@@ -209,17 +238,6 @@ for i in range(1):
 # creates the first enemy 
 # source: Andrew
 
-def controls(sweep):
-    keys = pg.key.get_pressed()
-    if keys[pg.K_g]:
-        x = player.rect.x
-        y = player.rect.y
-        color = TEAL
-        e = Sweep(x, y, color, 150, 150)
-        all_sprites.add(e)
-        sweep.add(e)
-        print("sweep")
-
 
 # add player to all sprites group
 all_sprites.add(player, plat, plat2, plat3, plat4, plat5)
@@ -230,6 +248,8 @@ all_platforms.add(plat, plat2, plat3, plat4, plat5)
 FRAME = 1
 TIMER = 0
 RAMP = 150
+# ramp sets the time in ticks when the score will decrease
+
 # Game loop
 running = True
 while running:
@@ -312,7 +332,7 @@ while running:
         MOBS += 1          
     # every time a point threshold is crossed, even if it isn't the first time, add another enemy
     '''
-    displace = pg.sprite.spritecollide(plat or plat2 or plat3 or plat4, plat5, enemies, True)
+    displace = pg.sprite.spritecollide(plat or plat2 or plat3 or plat4 or plat5, enemies, True)
     if displace: 
         print("Displace")
         x = random.randint(0, WIDTH)
@@ -324,7 +344,7 @@ while running:
         all_sprites.add(e)
         enemies.add(e)
     '''
-    # supposed to move enemies if they spawn inside a platform. Doesn't work
+    # supposed to move enemies if they spawn inside a platform. Doesn't work. Changed parameters of enemy spawns to fix
 
     if player.vel.y > 0:
         if hits:
@@ -340,6 +360,8 @@ while running:
     # this is because the vel.y will momentarily be zero because of the math
     # if I could use derivatives to determine the direction of the velocity, I could fix the lack of collision issues
     # currently, there is no distinction between if vel.y = 0 is from the top or bottom
+
+    
 
     if FRAME % RAMP == 0 and SCORE < 15:
         SCORE -= 2
@@ -377,7 +399,8 @@ while running:
         draw_text("Surprise! No stakes!", 30, WHITE, WIDTH / 2, HEIGHT / 2)
     # draws on-screen text
 
-        
+    # Bug testing 
+    # draw_text("Velocity x: " + str())    
 
     # draw all sprites
     all_sprites.draw(screen)
