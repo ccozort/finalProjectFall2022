@@ -4,6 +4,7 @@
 
 # import libraries and modules
 # from platform import platform
+# here is some code that might fix your problem...
 
 import pygame as pg
 from pygame.sprite import Sprite
